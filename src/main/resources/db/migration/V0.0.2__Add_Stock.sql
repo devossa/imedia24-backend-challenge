@@ -1,0 +1,2 @@
+ALTER TABLE products
+    ADD stock INTEGER NOT NULL DEFAULT 0;
