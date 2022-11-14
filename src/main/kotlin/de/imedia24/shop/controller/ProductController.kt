@@ -14,8 +14,8 @@ class ProductController(private val productService: ProductService) {
 
     private val logger = LoggerFactory.getLogger(ProductController::class.java)!!
 
-    @GetMapping("/products/{sku}", produces = ["application/json;charset=utf-8"])
-    fun findProductsBySku(
+    @GetMapping("/product/{sku}", produces = ["application/json;charset=utf-8"])
+    fun findProductBySku(
         @PathVariable("sku") sku: String
     ): ResponseEntity<ProductResponse> {
         logger.info("Request for product $sku")
@@ -26,5 +26,17 @@ class ProductController(private val productService: ProductService) {
         } else {
             ResponseEntity.ok(product)
         }
+    }
+
+    @GetMapping("/products", produces = ["application/json;charset=utf-8"])
+    fun findProductsBySku(
+        @PathParam("skus") skus: String?
+    ): ResponseEntity<List<ProductResponse>> {
+        if (skus == null) return ResponseEntity.notFound().build()
+
+        val skusList: List<String> = skus.split(',')
+        logger.info("Request for products ${skusList.toString()}")
+
+        return ResponseEntity.ok(productService.findProductsBySku(listOf()))
     }
 }

@@ -17,4 +17,21 @@ class ProductService(private val productRepository: ProductRepository) {
             ProductResponse(sku="sku",name="name", description = "description", price= BigDecimal.ONE)
         }
     }
+    fun findProductsBySku(skus: List<String>): List<ProductResponse> {
+        val products: MutableList<ProductResponse> = mutableListOf<ProductResponse>()
+        for (sku: String in skus) {
+            val pr: ProductEntity? = productRepository.findBySku(sku)
+            if (pr != null) {
+                products.add(
+                    ProductResponse(
+                        sku = pr.sku,
+                        name = pr.name,
+                        description = pr.description ?: "",
+                        price = pr.price
+                    )
+                )
+            }
+        }
+        return products
+    }
 }
