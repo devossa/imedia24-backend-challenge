@@ -40,7 +40,7 @@ class ProductController(private val productService: ProductService) {
         val skusList: List<String> = skus.split(',')
         logger.info("Request for products ${skusList.toString()}")
 
-        return ResponseEntity.ok(productService.findProductsBySku(listOf()))
+        return ResponseEntity.ok(productService.findProductsBySku(skusList))
     }
 
     @PostMapping("/products", produces = ["application/json;charset=utf-8"])
