@@ -36,7 +36,7 @@ class ProductService(private val productRepository: ProductRepository) {
         return products
     }
 
-    fun save(product: ProductEntity) {
-        productRepository.save(product)
+    fun save(product: ProductEntity): ProductEntity {
+        return productRepository.save(product)
     }
 }
