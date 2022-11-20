@@ -4,6 +4,7 @@ import de.imedia24.shop.db.entity.ProductEntity
 import de.imedia24.shop.domain.product.ProductResponse
 import de.imedia24.shop.service.ProductService
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -35,7 +36,7 @@ class ProductController(private val productService: ProductService) {
     }
 
     @GetMapping("/products", produces = ["application/json;charset=utf-8"])
-    fun findProductsBySku(
+    fun findProducts(
         @PathParam("skus") skus: String?
     ): ResponseEntity<List<ProductResponse>> {
         if (skus == null) return ResponseEntity.ok(productService.getAllProducts())
@@ -48,17 +49,25 @@ class ProductController(private val productService: ProductService) {
 
     @PostMapping("/products", produces = ["application/json;charset=utf-8"])
     fun createProduct(
-        @RequestBody product: ProductEntity
+        @RequestBody body: Map<String, String>
     ): ResponseEntity<ProductResponse> {
-        val existingProduct = productService.findProductBySku(product.sku)
+        if (!body.containsKey("sku") or !body.containsKey("name")) return ResponseEntity.badRequest().build()
 
+        val existingProduct = productService.findProductBySku(body["sku"]!!)
         if (existingProduct != null) return ResponseEntity.status(400).build()
+//        Should check for type casting errors here
+        val newProduct = ProductEntity(
+            sku=body["sku"]!!,
+            name=body.getOrDefault("name", ""),
+            description = body.getOrDefault("description", ""),
+            price= BigDecimal(body.getOrDefault("price", "0")),
+            stock=body.getOrDefault("stock", "0").toInt(),
+        )
 
-        val savedProduct: ProductEntity = productService.save(product)
-        logger.info("Adding product to db with sku=${product.sku}")
+        val savedProduct: ProductEntity = productService.save(newProduct)
+        logger.info("Adding product to db with sku=${newProduct.sku}")
 
-
-        return ResponseEntity.ok(ProductResponse(
+        return ResponseEntity.status(201).body(ProductResponse(
             sku = savedProduct.sku,
             name = savedProduct.name,
             description = savedProduct.description ?: "",
@@ -67,22 +76,23 @@ class ProductController(private val productService: ProductService) {
         ))
     }
 
-    @PatchMapping("/products/{sku}", produces = ["application/json;charset=utf-8"])
+    @PatchMapping("/products", produces = ["application/json;charset=utf-8"])
     fun updateProduct(
-        @RequestBody product: ProductEntity
+        @RequestBody body: Map<String, String>,
     ): ResponseEntity<ProductResponse> {
-        val existingProduct = productService.findProductBySku(product.sku) ?: return ResponseEntity.notFound().build()
+        if (!body.containsKey("sku")) return ResponseEntity.notFound().build()
+        val existingProduct = productService.findProductBySku(body["sku"]!!) ?: return ResponseEntity.notFound().build()
 
         val updatedProduct = ProductEntity(
             existingProduct.sku,
-            product.name.ifEmpty { existingProduct.name },
-            product.description?.ifEmpty { existingProduct.description } ?: existingProduct.description,
-            if (product.price != BigDecimal.ZERO) {product.price} else {existingProduct.price},
-            existingProduct.stock
+            body.getOrDefault("name", existingProduct.name),
+            body.getOrDefault("description", existingProduct.description),
+            body.getOrDefault("price", existingProduct.price) as BigDecimal,
+            existingProduct.stock,
         )
 
         productService.save(updatedProduct)
-        logger.info("Updating product with sku=${product.sku}")
+        logger.info("Updating product with sku=${body["sku"]}")
 
 
         return ResponseEntity.ok(ProductResponse(

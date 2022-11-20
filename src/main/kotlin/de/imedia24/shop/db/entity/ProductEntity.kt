@@ -1,6 +1,7 @@
 package de.imedia24.shop.db.entity
 
 import org.hibernate.annotations.UpdateTimestamp
+import org.jetbrains.annotations.NotNull
 import java.math.BigDecimal
 import java.time.ZonedDateTime
 import javax.persistence.Column
@@ -13,16 +14,19 @@ import javax.persistence.Table
 data class ProductEntity(
     @Id
     @Column(name = "sku", nullable = false)
-    val sku: String = "",
+    @NotNull
+    val sku: String,
 
     @Column(name = "name", nullable = false)
-    val name: String = "",
+    @NotNull
+    val name: String,
 
     @Column(name = "description")
     val description: String? = null,
 
     @Column(name = "price", nullable = false)
-    val price: BigDecimal = BigDecimal.ZERO,
+    @NotNull
+    val price: BigDecimal,
 
     @Column(name = "stock")
     val stock: Int = 0,

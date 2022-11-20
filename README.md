@@ -1,5 +1,11 @@
 # iMedia24 Coding challenge
 
+### How to run the docker image
+In the root folder of the application run the following commands
+* docker build -t ShopApp .
+* docker run -p 8080:8080 ShopApp
+
+
 ### Reference Documentation
 For further reference, please consider the following sections:
 
